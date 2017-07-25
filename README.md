@@ -1,10 +1,14 @@
 # openqa_bugfetcher
 
+Tool to update the openqa bug status cache
+
+
 ## Installation
 
 ```sh
 python3 setup.py install
 ```
+
 
 ## Configuration
 
@@ -18,6 +22,7 @@ secret = BAR
 
 Then you will need to edit `/etc/openqa/bugfetcher.conf` and set up the desired openQA server
 and bugtracker login information.
+
 
 ## Running
 
