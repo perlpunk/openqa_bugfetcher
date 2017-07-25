@@ -1,5 +1,11 @@
 # openqa_bugfetcher
 
+## Installation
+
+```sh
+python3 setup.py install
+```
+
 ## Configuration
 
 You will need to configure your openQA API Key in `/etc/openqa/client.conf`:
