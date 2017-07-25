@@ -26,4 +26,4 @@ for bug_dbid, bugid in bugs.items():
     issue = issue_fetcher.get_issue(bugid)
     print("     -> title: %s" % issue.title)
     print("     -> existing: %s" % issue.existing)
-    client.openqa_request('PUT', 'bugs/%s' % bug_dbid, issue.get_dict())
+    client.openqa_request('PUT', 'bugs/%s' % bug_dbid, data=issue.get_dict())
