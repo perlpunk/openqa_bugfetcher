@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/..'))
+
+import configparser
+
+from openqa_client.client import OpenQA_Client
+from openqa_bugfetcher.issues import IssueFetcher
+
+
+CONFIGFILE = '/etc/openqa/bugfetcher.conf'
+
+config = configparser.ConfigParser()
+config.read(CONFIGFILE)
+
+issue_fetcher = IssueFetcher(config)
+client = OpenQA_Client(config['main']['server'])
+
+bugs = client.openqa_request('GET', 'bugs', {'refreshable': 1, 'delta': config['main']['refresh_interval']})['bugs']
+print("Found %i bugs to update" % len(bugs))
+
+for bug_dbid, bugid in bugs.items():
+    print("%03s: %s" % (bug_dbid, bugid))
+    issue = issue_fetcher.get_issue(bugid)
+    print("     -> title: %s" % issue.title)
+    print("     -> existing: %s" % issue.existing)
+    client.openqa_request('PUT', 'bugs/%s' % bug_dbid, issue.get_dict())
