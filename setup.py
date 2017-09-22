@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='openqa_bugfetcher',
-    version='0.0.4',
+    version='0.1.0',
     license='GPLv3',
     description='Tool to update the openqa bug status cache',
     author='Dominik Heidler',
