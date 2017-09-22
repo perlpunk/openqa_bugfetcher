@@ -11,6 +11,15 @@ from openqa_bugfetcher.issues import IssueFetcher
 
 
 CONFIGFILE = '/etc/openqa/bugfetcher.conf'
+if len(sys.argv) == 2:
+    if sys.argv[1] == "-h" or sys.argv[1] == "--help":
+        print("Usage: %s [config]" % sys.argv[0])
+        print("config will default to %s" % CONFIGFILE)
+        sys.exit()
+    else:
+        CONFIGFILE = sys.argv[1]
+        assert os.path.isfile(CONFIGFILE), "Config file '%s' does not exist" % CONFIGFILE
+        assert os.access(CONFIGFILE, os.R_OK), "Config file '%s' not readable" % CONFIGFILE
 
 config = configparser.ConfigParser()
 config.read(CONFIGFILE)
