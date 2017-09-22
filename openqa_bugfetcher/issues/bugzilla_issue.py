@@ -18,6 +18,7 @@ class BugzillaIssue(BaseIssue):
         issue_id = self.bugid.split('#')[1]
         r = json_rpc_get(url, 'Bug.get', {"ids": [issue_id]})
         assert r.status_code != 401, "Wrong auth for Bugzilla"
+        assert r.status_code != 403, "Insufficient permission to access this bug"
         assert r.ok
         j = r.json()
         if j['error'] and j['error']['code'] == 101:
