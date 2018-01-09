@@ -21,8 +21,11 @@ class BugzillaIssue(BaseIssue):
         assert r.status_code != 403, "Insufficient permission to access this bug"
         assert r.ok
         j = r.json()
+        assert j, "Empty JSON Object"
         if j['error'] and j['error']['code'] == 101:
             self.existing = False
+        elif j['error'] and j['error']['code'] == 102:
+            raise AssertionError("Insufficient permission to access this bug")
         else:
             b = j['result']['bugs'][0]
             self.title = b['summary']
