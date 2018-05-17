@@ -11,15 +11,19 @@ from openqa_bugfetcher.issues import IssueFetcher
 
 
 CONFIGFILE = '/etc/openqa/bugfetcher.conf'
-if len(sys.argv) == 2:
+FORCE_BUGID = None
+if len(sys.argv) in (2, 3):
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
-        print("Usage: %s [config]" % sys.argv[0])
+        print("Usage: %s [config] [bugid]" % sys.argv[0])
         print("config will default to %s" % CONFIGFILE)
+        print("if bugid is specified, only update this bug (even before the time)")
         sys.exit()
     else:
         CONFIGFILE = sys.argv[1]
         assert os.path.isfile(CONFIGFILE), "Config file '%s' does not exist" % CONFIGFILE
         assert os.access(CONFIGFILE, os.R_OK), "Config file '%s' not readable" % CONFIGFILE
+    if len(sys.argv) == 3:
+        FORCE_BUGID = sys.argv[2]
 
 config = configparser.ConfigParser()
 config.read(CONFIGFILE)
@@ -27,7 +31,14 @@ config.read(CONFIGFILE)
 issue_fetcher = IssueFetcher(config)
 client = OpenQA_Client(config['main']['server'])
 
+if FORCE_BUGID:
+    config['main']['refresh_interval'] = '1'
+
 bugs = client.openqa_request('GET', 'bugs', {'refreshable': 1, 'delta': config['main']['refresh_interval']})['bugs']
+
+if FORCE_BUGID:
+    bugs = {k: v for k, v in bugs.items() if v == FORCE_BUGID}
+
 print("Found %i bugs to update" % len(bugs))
 
 for bug_dbid, bugid in bugs.items():
@@ -36,6 +47,9 @@ for bug_dbid, bugid in bugs.items():
         issue = issue_fetcher.get_issue(bugid)
         print("     -> title: %s" % issue.title)
         print("     -> existing: %s" % issue.existing)
+        if FORCE_BUGID:
+            from pprint import pprint
+            pprint(issue.get_dict())
         client.openqa_request('PUT', 'bugs/%s' % bug_dbid, data=issue.get_dict())
     except AssertionError as e:
         print("     -> ERROR: %s" % e)
