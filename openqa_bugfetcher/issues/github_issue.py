@@ -9,7 +9,7 @@ class GitHubIssue(BaseIssue):
     def fetch(self, conf):
         repo, issue_id = self.bugid.split('#')[1:]
         url = "https://api.github.com/repos/%s/issues/%s" % (repo, issue_id)
-        r = requests.get(url)
+        r = requests.get(url, params=conf['github'])
         if r.ok:
             j = r.json()
             self.title = j['title']
