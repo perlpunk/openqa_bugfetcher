@@ -10,6 +10,7 @@ class GitHubIssue(BaseIssue):
         repo, issue_id = self.bugid.split('#')[1:]
         url = "https://api.github.com/repos/%s/issues/%s" % (repo, issue_id)
         r = requests.get(url, params=conf['github'])
+        assert r.status_code != 403, "Github ratelimiting"
         if r.ok:
             j = r.json()
             self.title = j['title']
