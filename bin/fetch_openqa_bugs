@@ -20,13 +20,11 @@ if len(sys.argv) in (2, 3):
         sys.exit()
     else:
         CONFIGFILE = sys.argv[1]
-        assert os.path.isfile(CONFIGFILE), "Config file '%s' does not exist" % CONFIGFILE
-        assert os.access(CONFIGFILE, os.R_OK), "Config file '%s' not readable" % CONFIGFILE
     if len(sys.argv) == 3:
         FORCE_BUGID = sys.argv[2]
 
 config = configparser.ConfigParser()
-config.read(CONFIGFILE)
+assert config.read(CONFIGFILE), "Config file '%s' can't be read" % CONFIGFILE
 
 issue_fetcher = IssueFetcher(config)
 client = OpenQA_Client(config['main']['server'])
