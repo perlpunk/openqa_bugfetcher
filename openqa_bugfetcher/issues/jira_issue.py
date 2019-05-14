@@ -8,7 +8,7 @@ class JiraIssue(BaseIssue):
 
     def fetch(self, conf):
         issue_id = self.bugid.split('#')[1]
-        url = "https://jira.suse.de/rest/api/2/issue/%s" % issue_id
+        url = "https://jira.suse.com/rest/api/2/issue/%s" % issue_id
         a = conf['jira']
         r = requests.get(url, auth=(a['user'], a['pass']))
         if r.ok:
