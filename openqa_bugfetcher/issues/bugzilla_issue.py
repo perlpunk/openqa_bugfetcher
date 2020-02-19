@@ -24,7 +24,7 @@ class BugzillaIssue(BaseIssue):
             assert r.ok
             j = r.json()
             assert j, "Empty JSON Object"
-            if j['error'] and j['error']['code'] == 101:
+            if j['error'] and j['error']['code'] in (100, 101):
                 self.existing = False
             elif j['error'] and j['error']['code'] == 102:
                 raise AssertionError("Insufficient permission to access this bug")
