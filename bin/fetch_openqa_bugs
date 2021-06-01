@@ -2,7 +2,8 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/..'))
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/.."))
 
 import configparser
 
@@ -10,7 +11,7 @@ from openqa_client.client import OpenQA_Client
 from openqa_bugfetcher.issues import IssueFetcher
 
 
-CONFIGFILE = '/etc/openqa/bugfetcher.conf'
+CONFIGFILE = "/etc/openqa/bugfetcher.conf"
 FORCE_BUGID = None
 if len(sys.argv) in (2, 3):
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
@@ -27,12 +28,12 @@ config = configparser.ConfigParser()
 assert config.read(CONFIGFILE), "Config file '%s' can't be read" % CONFIGFILE
 
 issue_fetcher = IssueFetcher(config)
-client = OpenQA_Client(config['main']['server'])
+client = OpenQA_Client(config["main"]["server"])
 
 if FORCE_BUGID:
-    config['main']['refresh_interval'] = '1'
+    config["main"]["refresh_interval"] = "1"
 
-bugs = client.openqa_request('GET', 'bugs', {'refreshable': 1, 'delta': config['main']['refresh_interval']})['bugs']
+bugs = client.openqa_request("GET", "bugs", {"refreshable": 1, "delta": config["main"]["refresh_interval"]})["bugs"]
 
 if FORCE_BUGID:
     bugs = {k: v for k, v in bugs.items() if v == FORCE_BUGID}
@@ -47,7 +48,8 @@ for bug_dbid, bugid in bugs.items():
         print("     -> existing: %s" % issue.existing)
         if FORCE_BUGID:
             from pprint import pprint
+
             pprint(issue.get_dict())
-        client.openqa_request('PUT', 'bugs/%s' % bug_dbid, data=issue.get_dict())
+        client.openqa_request("PUT", "bugs/%s" % bug_dbid, data=issue.get_dict())
     except AssertionError as e:
         print("     -> ERROR: %s" % e)
