@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-from openqa_bugfetcher.issues import BaseIssue
 import requests
+from openqa_bugfetcher.issues import BaseIssue
 
 
 class GitHubIssue(BaseIssue):

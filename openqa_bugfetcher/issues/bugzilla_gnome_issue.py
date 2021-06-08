@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
-from openqa_bugfetcher.issues import BaseIssue
-from collections import OrderedDict
-import requests
 import json
+from collections import OrderedDict
+
+import requests
+from openqa_bugfetcher.issues import BaseIssue
 
 
 class BugzillaGnomeIssue(BaseIssue):
