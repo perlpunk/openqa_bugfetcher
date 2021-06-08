@@ -1,6 +1,5 @@
-#!/usr/bin/python3
-
 import requests
+
 from openqa_bugfetcher.issues import BaseIssue
 
 
@@ -10,15 +9,15 @@ class ProgressIssue(BaseIssue):
     def fetch(self, conf):
         issue_id = self.bugid.split("#")[1]
         url = "https://progress.opensuse.org/issues/%s.json" % issue_id
-        r = requests.get(url, headers={"X-Redmine-API-Key": conf["progress"]["api_key"]})
-        if r.ok:
-            j = r.json()["issue"]
-            self.title = j["subject"]
-            self.priority = j["priority"]["name"]
-            self.assigned = "assigned_to" in j
-            self.assignee = j["assigned_to"]["name"] if self.assigned else None
-            self.status = j["status"]["name"]
+        req = requests.get(url, headers={"X-Redmine-API-Key": conf["progress"]["api_key"]})
+        if req.ok:
+            data = req.json()["issue"]
+            self.title = data["subject"]
+            self.priority = data["priority"]["name"]
+            self.assigned = "assigned_to" in data
+            self.assignee = data["assigned_to"]["name"] if self.assigned else None
+            self.status = data["status"]["name"]
             self.open = self.status not in ("Rejected", "Resolved", "Closed")
         else:
-            assert r.status_code != 401, "Wrong auth for Progress"
+            assert req.status_code != 401, "Wrong auth for Progress"
             self.existing = False
