@@ -34,4 +34,5 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
      - name: pylint run
        run: |
-         pylint openqa_bugfetcher/
+         # disable line lenght and docstring checks + few methods in class
+         pylint openqa_bugfetcher/ -d C0114,C0115,C0116,C0301,R0902,R0903

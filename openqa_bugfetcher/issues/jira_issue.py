@@ -1,7 +1,6 @@
-#!/usr/bin/python3
+import requests
 
 from openqa_bugfetcher.issues import BaseIssue
-import requests
 
 
 class JiraIssue(BaseIssue):
@@ -10,14 +9,14 @@ class JiraIssue(BaseIssue):
     def fetch(self, conf):
         issue_id = self.bugid.split("#")[1]
         url = "https://jira.suse.com/rest/api/2/issue/%s" % issue_id
-        a = conf["jira"]
-        r = requests.get(url, auth=(a["user"], a["pass"]))
-        if r.ok:
-            j = r.json()["fields"]
-            self.title = j["summary"]
-            self.priority = j["priority"]["name"]
-            self.status = j["status"]["name"]
+        cred = conf["jira"]
+        req = requests.get(url, auth=(cred["user"], cred["pass"]))
+        if req.ok:
+            data = req.json()["fields"]
+            self.title = data["summary"]
+            self.priority = data["priority"]["name"]
+            self.status = data["status"]["name"]
             self.open = self.status not in ("Rejected", "Resolved", "Closed")
         else:
-            assert r.status_code != 401, "Wrong auth for Jira"
+            assert req.status_code != 401, "Wrong auth for Jira"
             self.existing = False

@@ -1,11 +1,14 @@
-#!/usr/bin/python3
-
-import os
+from abc import ABC, abstractmethod
+from collections import OrderedDict
 from importlib import import_module
 import inspect
+import json
+import os
+
+import requests
 
 
-class BaseIssue(object):
+class BaseIssue(ABC):
     prefixes = set()
 
     def __init__(self, conf, bugid):
@@ -32,19 +35,48 @@ class BaseIssue(object):
             "existing": int(self.existing),
         }
 
+    @abstractmethod
     def fetch(self, conf):
         pass
 
 
-class IssueFetcher(object):
+class BugzillaBaseIssue(BaseIssue):
+    disabled_assigne = ""
+    url = ""
+
+    def fetch(self, conf):
+        def json_rpc_get(url, method, params):
+            get_params = OrderedDict({"method": method, "params": json.dumps([params])})
+            return requests.get(url, params=get_params)
+
+        issue_id = self.bugid.split("#")[1]
+        req = json_rpc_get(self.url, "Bug.get", {"ids": [issue_id]})
+        assert req.status_code != 401, "Wrong auth for Bugzilla"
+        assert req.status_code != 403, "Insufficient permission to access this bug"
+        assert req.ok
+        data = req.json()
+        if data["error"] and data["error"]["code"] == 101:
+            self.existing = False
+        else:
+            bug = data["result"]["bugs"][0]
+            self.title = bug["summary"]
+            self.priority = bug["priority"]
+            self.assignee = bug["assigned_to"]
+            self.assigned = not self.assignee.endswith(self.disabled_assigne)
+            self.open = bool(bug["is_open"])
+            self.status = bug["status"]
+            self.resolution = bug.get("resolution")
+
+
+class IssueFetcher:
     def __init__(self, conf):
         self.conf = conf
         self.prefix_table = {}
         for module in os.listdir(os.path.dirname(__file__)):
             if module == "__init__.py" or module[-3:] != ".py" or module == "__pycache__":
                 continue
-            m = import_module("openqa_bugfetcher.issues.%s" % module[:-3])
-            for name, obj in inspect.getmembers(m):
+            plugin = import_module("openqa_bugfetcher.issues.%s" % module[:-3])
+            for _, obj in inspect.getmembers(plugin):
                 if inspect.isclass(obj) and issubclass(obj, BaseIssue) and obj is not BaseIssue:
                     for prefix in obj.prefixes:
                         self.prefix_table[prefix] = obj
