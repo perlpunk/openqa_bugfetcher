@@ -1,10 +1,13 @@
 import html
 import json
-from collections import OrderedDict
 
 import requests
 
 from openqa_bugfetcher.issues import BaseIssue
+
+
+# error codes:
+# https://github.com/bugzilla/bugzilla/blob/master/Bugzilla/WebService/Constants.pm#L160
 
 
 class BugzillaIssue(BaseIssue):
@@ -14,25 +17,29 @@ class BugzillaIssue(BaseIssue):
         issue_id = self.bugid.split("#")[1]
         if "user" in conf["bugzilla"]:
 
-            def json_rpc_get(url, method, params):
-                get_params = OrderedDict({"method": method, "params": json.dumps([params])})
-                cred = conf["bugzilla"]
-                return requests.get(url, params=get_params, auth=(cred["user"], cred["pass"]))
+            def rest_get_bug(issue_id):
+                url = f"https://bugzilla.suse.com/rest/bug/{issue_id}"
+                get_params = {}
+                a = conf["bugzilla"]
+                if a.get("api_key"):
+                    get_params["api_key"] = a["api_key"]
+                return requests.get(url, params=get_params)
 
-            url = "https://apibugzilla.suse.com/jsonrpc.cgi"
-
-            req = json_rpc_get(url, "Bug.get", {"ids": [issue_id]})
+            req = rest_get_bug(issue_id)
             assert req.status_code != 401, "Wrong auth for Bugzilla"
             assert req.status_code != 403, "Insufficient permission to access this bug (or the API at all)"
-            assert req.ok
+            assert req.ok, "Server Status != 200: %s" % req.text
             data = req.json()
             assert data, "Empty JSON Object"
-            if data["error"] and data["error"]["code"] in (100, 101):
-                self.existing = False
-            elif data["error"] and data["error"]["code"] == 102:
-                raise AssertionError("Insufficient permission to access this bug")
+            if data.get("error"):
+                if data["code"] in (100, 101):
+                    self.existing = False
+                elif data["code"] in (102, 113):
+                    raise AssertionError("Insufficient permission to access this bug")
+                else:
+                    raise AssertionError("Bugzilla Error %(code)i: %(message)s" % data)
             else:
-                bug = data["result"]["bugs"][0]
+                bug = data["bugs"][0]
                 self.title = bug["summary"]
                 self.priority = bug["priority"]
                 self.assignee = bug["assigned_to"]
