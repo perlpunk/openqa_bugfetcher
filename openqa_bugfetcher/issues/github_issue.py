@@ -9,11 +9,11 @@ class GitHubIssue(BaseIssue):
     def fetch(self, conf):
         try:
             repo, issue_id = self.bugid.split("#")[1:]
-            url = "https://api.github.com/repos/%s/issues/%s" % (repo, issue_id)
+            url = f"https://api.github.com/repos/{repo}/issues/{issue_id}"
             auth = None
             if "client_id" in conf["github"] and "client_secret" in conf["github"]:
                 auth = (conf["github"]["client_id"], conf["github"]["client_secret"])
-            req = requests.get(url, auth=auth)
+            req = requests.get(url, auth=auth, timeout=10)
             assert req.status_code != 403, "Github ratelimiting"
             if req.ok:
                 data = req.json()

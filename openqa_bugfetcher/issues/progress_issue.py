@@ -8,8 +8,8 @@ class ProgressIssue(BaseIssue):
 
     def fetch(self, conf):
         issue_id = self.bugid.split("#")[1]
-        url = "https://progress.opensuse.org/issues/%s.json" % issue_id
-        req = requests.get(url, headers={"X-Redmine-API-Key": conf["progress"]["api_key"]})
+        url = f"https://progress.opensuse.org/issues/{issue_id}.json"
+        req = requests.get(url, headers={"X-Redmine-API-Key": conf["progress"]["api_key"]}, timeout=10)
         if req.ok:
             data = req.json()["issue"]
             self.title = data["subject"]

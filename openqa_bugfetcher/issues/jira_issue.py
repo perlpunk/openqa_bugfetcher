@@ -8,9 +8,9 @@ class JiraIssue(BaseIssue):
 
     def fetch(self, conf):
         issue_id = self.bugid.split("#")[1]
-        url = "https://jira.suse.com/rest/api/2/issue/%s" % issue_id
+        url = f"https://jira.suse.com/rest/api/2/issue/{issue_id}"
         cred = conf["jira"]
-        req = requests.get(url, auth=(cred["user"], cred["pass"]))
+        req = requests.get(url, auth=(cred["user"], cred["pass"]), timeout=10)
         if req.ok:
             data = req.json()["fields"]
             self.title = data["summary"]
