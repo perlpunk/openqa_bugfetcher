@@ -14,7 +14,7 @@ class BugzillaIssue(BaseIssue):
 
     def fetch(self, conf):
         issue_id = self.bugid.split("#")[1]
-        if "user" in conf["bugzilla"]:
+        if "api_key" in conf["bugzilla"]:
 
             def rest_get_bug(issue_id):
                 url = f"https://bugzilla.suse.com/rest/bug/{issue_id}"
