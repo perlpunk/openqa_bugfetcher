@@ -47,7 +47,7 @@ class BugzillaBaseIssue(BaseIssue):
     def fetch(self, conf):
         def json_rpc_get(url, method, params):
             get_params = OrderedDict({"method": method, "params": json.dumps([params])})
-            return requests.get(url, params=get_params)
+            return requests.get(url, params=get_params, timeout=10)
 
         issue_id = self.bugid.split("#")[1]
         req = json_rpc_get(self.url, "Bug.get", {"ids": [issue_id]})
@@ -75,14 +75,14 @@ class IssueFetcher:
         for module in os.listdir(os.path.dirname(__file__)):
             if module == "__init__.py" or module[-3:] != ".py" or module == "__pycache__":
                 continue
-            plugin = import_module("openqa_bugfetcher.issues.%s" % module[:-3])
+            plugin = import_module(f"openqa_bugfetcher.issues.{module[:-3]}")
             for _, obj in inspect.getmembers(plugin):
                 if inspect.isclass(obj) and issubclass(obj, BaseIssue) and obj is not BaseIssue:
                     for prefix in obj.prefixes:
                         self.prefix_table[prefix] = obj
 
     def get_issue(self, bugid):
-        assert "#" in bugid, "Bad bugid format: %s" % bugid
+        assert "#" in bugid, f"Bad bugid format: {bugid}"
         prefix = bugid.split("#")[0].lower()
-        assert prefix in self.prefix_table, "No implementation found for %s" % bugid
+        assert prefix in self.prefix_table, f"No implementation found for {bugid}"
         return self.prefix_table[prefix](self.conf, bugid)
