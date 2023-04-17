@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/.."))
 
 import configparser
+import requests
 
 from openqa_client.client import OpenQA_Client
 from openqa_bugfetcher.issues import IssueFetcher
@@ -51,5 +52,5 @@ for bug_dbid, bugid in bugs.items():
 
             pprint(issue.get_dict())
         client.openqa_request("PUT", "bugs/%s" % bug_dbid, data=issue.get_dict())
-    except AssertionError as e:
+    except (AssertionError, requests.exceptions.ReadTimeout) as e:
         print("     -> ERROR: %s" % e)
