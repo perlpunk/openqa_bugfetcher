@@ -1,3 +1,5 @@
+test
+
 # openqa_bugfetcher
 
 Tool to update the openqa bug status cache
